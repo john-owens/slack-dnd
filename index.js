@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 
 var http = require('http');
@@ -18,7 +19,7 @@ function rollDie(max){
 function startRollServer(port, ip, slackToken, slackHost, groupRestrict){
   var server = http.createServer(function(req, res){
     var parsed = url.parse(req.url, true);
-    
+
     if(typeof groupRestrict !== 'undefined'  && parsed.query.team_id !== groupRestrict){
       return res.end('');
     }
@@ -53,10 +54,10 @@ function startRollServer(port, ip, slackToken, slackHost, groupRestrict){
       });
 
       console.log('sending to webhook', output);
-      
+
       var post = https.request({
         host: slackHost,
-        path: '/services/hooks/incoming-webhook?token='+slackToken,
+        path: '/services/'+slackToken,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,8 +85,8 @@ function startRollServer(port, ip, slackToken, slackHost, groupRestrict){
 
 if(!module.parent){
   argv = minimist(process.argv.slice(2));
-  host = argv.host || host;
-  port = argv.port || port;
+  host = argv.host || process.env.OPENSHIFT_NODEJS_IP || host;
+  port = argv.port || process.env.OPENSHIFT_NODEJS_PORT || port;
   groupRestrict = argv.group || groupRestrict;
   slackHost = argv.slack || slackHost;
   slackToken = argv.token || slackToken;
